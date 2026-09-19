@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: exoprep-api
+  namespace: exoprep
+spec:
+  ingressClassName: nginx
+
+  rules:
+
+    # Backend API
+    - host: api.tavkeer.online
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: exoprep-api
+                port:
+                  number: 4000
+
+    # Next.js Admin
+    - host: admin.tavkeer.online
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: exoprep-admin
+                port:
+                  number: 3000

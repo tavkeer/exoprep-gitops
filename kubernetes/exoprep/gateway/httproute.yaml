@@ -1,0 +1,18 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: exoprep-api
+  namespace: exoprep
+spec:
+  parentRefs:
+    - name: exoprep-gateway
+  hostnames:
+    - "api.test"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: exoprep-api
+          port: 4000
