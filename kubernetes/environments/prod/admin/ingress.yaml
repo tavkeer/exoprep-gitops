@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: exoprep-admin-prod
+  namespace: exoprep-prod
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+
+spec:
+  ingressClassName: nginx
+
+  rules:
+    - host: admin.tavkeer.online
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: exoprep-admin-prod
+                port:
+                  number: 3000

@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exoprep-admin-prod
+  namespace: exoprep-prod
+  labels:
+    app: exoprep-admin-prod
+    environment: production
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: exoprep-admin-prod
+
+  template:
+    metadata:
+      labels:
+        app: exoprep-admin-prod
+        environment: production
+
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+
+      containers:
+        - name: exoprep-admin-prod
+
+          image: ghcr.io/tavkeer/exoprep-admin:1.0.0
+          imagePullPolicy: IfNotPresent
+
+          env:
+            - name: NODE_ENV
+              value: "production"
+
+            - name: PORT
+              value: "3000"
+
+            - name: HOSTNAME
+              value: "0.0.0.0"
+
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+
+          volumeMounts:
+            - name: firebase-credentials
+              mountPath: /app/serviceAccountKey.json
+              subPath: serviceAccountKey.json
+              readOnly: true
+
+      volumes:
+        - name: firebase-credentials
+          secret:
+            secretName: exoprep-secret

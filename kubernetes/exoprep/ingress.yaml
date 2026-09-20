@@ -3,12 +3,13 @@ kind: Ingress
 metadata:
   name: exoprep-api
   namespace: exoprep
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+
 spec:
   ingressClassName: nginx
 
   rules:
-
-    # Backend API
     - host: api.tavkeer.online
       http:
         paths:
@@ -19,15 +20,3 @@ spec:
                 name: exoprep-api
                 port:
                   number: 4000
-
-    # Next.js Admin
-    - host: admin.tavkeer.online
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: exoprep-admin
-                port:
-                  number: 3000
