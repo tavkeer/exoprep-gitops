@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: exoprep-uploads-prod-pv
+  labels:
+    app.kubernetes.io/part-of: exoprep
+    environment: production
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: exoprep-nfs
+  nfs:
+    server: 192.168.0.107
+    path: /data/k8s/uploads-prod
+  mountOptions:
+    - nfsvers=4
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: exoprep-uploads
+  namespace: exoprep-prod
+  labels:
+    app.kubernetes.io/part-of: exoprep
+    environment: production
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: exoprep-nfs
+  resources:
+    requests:
+      storage: 10Gi

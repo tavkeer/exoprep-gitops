@@ -1,0 +1,162 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exoprep-api-prod
+  namespace: exoprep-prod
+  labels:
+    app: exoprep-api-prod
+    environment: production
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: exoprep-api-prod
+
+  template:
+    metadata:
+      labels:
+        app: exoprep-api-prod
+        environment: production
+
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+
+      volumes:
+        # Firebase service account credentials
+        - name: firebase-credentials
+          secret:
+            secretName: exoprep-secret
+            items:
+              - key: serviceAccountKey.json
+                path: serviceAccountKey.json
+
+        # Shared volume for PDF file uploads
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: exoprep-uploads
+
+      containers:
+        # ==========================================
+        # API Server
+        # ==========================================
+        - name: exoprep-api-prod
+          image: ghcr.io/harudh/exoprep-api:latest
+          imagePullPolicy: IfNotPresent
+
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+
+          ports:
+            - name: http
+              containerPort: 4000
+              protocol: TCP
+
+          envFrom:
+            - configMapRef:
+                name: exoprep-config
+
+            - secretRef:
+                name: exoprep-secret
+
+          volumeMounts:
+            - name: firebase-credentials
+              mountPath: /app/serviceAccountKey.json
+              subPath: serviceAccountKey.json
+              readOnly: true
+
+            - name: uploads
+              mountPath: /app/uploads
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 2
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exoprep-worker-prod
+  namespace: exoprep-prod
+  labels:
+    app: exoprep-worker-prod
+    environment: production
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: exoprep-worker-prod
+
+  template:
+    metadata:
+      labels:
+        app: exoprep-worker-prod
+        environment: production
+
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+
+      volumes:
+        # Shared volume for PDF file handoff
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: exoprep-uploads
+
+      containers:
+        # ==========================================
+        # Extraction Worker
+        # ==========================================
+        - name: exoprep-worker-prod
+          image: ghcr.io/harudh/exoprep-worker:latest
+          imagePullPolicy: IfNotPresent
+
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+
+          envFrom:
+            - configMapRef:
+                name: exoprep-config
+
+            - secretRef:
+                name: exoprep-secret
+
+          volumeMounts:
+            - name: uploads
+              mountPath: /app/uploads
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
