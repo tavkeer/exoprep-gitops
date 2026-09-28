@@ -22,7 +22,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: exoprep-uploads
+  name: exoprep-uploads-prod
   namespace: exoprep-prod
   labels:
     app.kubernetes.io/part-of: exoprep
