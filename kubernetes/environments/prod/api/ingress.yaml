@@ -4,14 +4,9 @@ metadata:
   name: exoprep-api-prod
   namespace: exoprep-prod
   annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-    nginx.ingress.kubernetes.io/proxy-buffering: "off"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-
+    nginx.ingress.kubernetes.io/proxy-body-size: 50m
 spec:
   ingressClassName: nginx
-
   rules:
     - host: api-prod.tavkeer.online
       http:

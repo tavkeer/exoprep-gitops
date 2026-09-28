@@ -31,6 +31,7 @@ spec:
   accessModes:
     - ReadWriteMany
   storageClassName: exoprep-nfs
+  volumeName: exoprep-uploads-prod-pv
   resources:
     requests:
       storage: 10Gi

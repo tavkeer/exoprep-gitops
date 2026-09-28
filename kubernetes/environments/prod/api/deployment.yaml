@@ -4,51 +4,29 @@ metadata:
   name: exoprep-api-prod
   namespace: exoprep-prod
   labels:
-    app: exoprep-api-prod
-    environment: production
-
+    app: exoprep
 spec:
-  replicas: 2
-
+  replicas: 3
   selector:
     matchLabels:
-      app: exoprep-api-prod
-
+      app: exoprep
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
   template:
     metadata:
       labels:
-        app: exoprep-api-prod
-        environment: production
-
+        app: exoprep
     spec:
       imagePullSecrets:
         - name: ghcr-pull-secret
 
-      volumes:
-        # Firebase service account credentials
-        - name: firebase-credentials
-          secret:
-            secretName: exoprep-secret
-            items:
-              - key: serviceAccountKey.json
-                path: serviceAccountKey.json
-
-        # Shared volume for PDF file uploads
-        - name: uploads
-          persistentVolumeClaim:
-            claimName: exoprep-uploads
-
       containers:
-        # ==========================================
-        # API Server
-        # ==========================================
-        - name: exoprep-api-prod
-          image: ghcr.io/harudh/exoprep-api:latest
+        - name: api
+          image: ghcr.io/harudh/exoprep-api:0.2
           imagePullPolicy: IfNotPresent
-
-          securityContext:
-            runAsUser: 1000
-            runAsGroup: 1000
 
           ports:
             - name: http
@@ -58,26 +36,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: exoprep-config
-
             - secretRef:
                 name: exoprep-secret
-
-          volumeMounts:
-            - name: firebase-credentials
-              mountPath: /app/serviceAccountKey.json
-              subPath: serviceAccountKey.json
-              readOnly: true
-
-            - name: uploads
-              mountPath: /app/uploads
-
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "256Mi"
-            limits:
-              cpu: "1000m"
-              memory: "512Mi"
 
           livenessProbe:
             httpGet:
@@ -97,66 +57,61 @@ spec:
             timeoutSeconds: 3
             failureThreshold: 2
 
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: exoprep-worker-prod
-  namespace: exoprep-prod
-  labels:
-    app: exoprep-worker-prod
-    environment: production
-
-spec:
-  replicas: 1
-
-  selector:
-    matchLabels:
-      app: exoprep-worker-prod
-
-  template:
-    metadata:
-      labels:
-        app: exoprep-worker-prod
-        environment: production
-
-    spec:
-      imagePullSecrets:
-        - name: ghcr-pull-secret
-
-      volumes:
-        # Shared volume for PDF file handoff
-        - name: uploads
-          persistentVolumeClaim:
-            claimName: exoprep-uploads
-
-      containers:
-        # ==========================================
-        # Extraction Worker
-        # ==========================================
-        - name: exoprep-worker-prod
-          image: ghcr.io/harudh/exoprep-worker:latest
-          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
 
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
 
+          volumeMounts:
+            - name: firebase-secret
+              mountPath: /app/serviceAccountKey.json
+              subPath: serviceAccountKey.json
+              readOnly: true
+
+            - name: uploads
+              mountPath: /app/uploads
+
+        - name: worker
+          image: ghcr.io/harudh/exoprep-worker:0.1
+          imagePullPolicy: IfNotPresent
+
           envFrom:
             - configMapRef:
                 name: exoprep-config
-
             - secretRef:
                 name: exoprep-secret
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
 
           volumeMounts:
             - name: uploads
               mountPath: /app/uploads
 
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "256Mi"
-            limits:
-              cpu: "1000m"
-              memory: "512Mi"
+      volumes:
+        - name: firebase-secret
+          secret:
+            secretName: exoprep-secret
+            items:
+              - key: serviceAccountKey.json
+                path: serviceAccountKey.json
+
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: exoprep-uploads

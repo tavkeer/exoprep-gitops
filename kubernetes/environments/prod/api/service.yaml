@@ -3,16 +3,10 @@ kind: Service
 metadata:
   name: exoprep-api-prod
   namespace: exoprep-prod
-  labels:
-    app: exoprep-api-prod
-    environment: production
-
 spec:
   type: ClusterIP
-
   selector:
-    app: exoprep-api-prod
-
+    app: exoprep
   ports:
     - name: http
       port: 4000
