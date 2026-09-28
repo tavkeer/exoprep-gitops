@@ -27,7 +27,7 @@ spec:
       containers:
         - name: exoprep-admin-prod
 
-          image: ghcr.io/harudh/exoprep-admin:f3933b0f167b20d40ddb1d4250c9e1ea4e1ab8cd
+          image: ghcr.io/harudh/exoprep-admin:b766d0ad707a2c8805ac7a1a60a3706dfd496e46
           imagePullPolicy: IfNotPresent
 
           env:
