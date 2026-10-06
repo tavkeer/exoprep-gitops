@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nfs-client-provisioner
+  namespace: nfs-provisioner
+  labels:
+    app.kubernetes.io/name: nfs-client-provisioner
+    app.kubernetes.io/part-of: exoprep
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nfs-client-provisioner
+
+  strategy:
+    type: Recreate
+
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: nfs-client-provisioner
+        app.kubernetes.io/part-of: exoprep
+
+    spec:
+      serviceAccountName: nfs-client-provisioner
+
+      containers:
+        - name: nfs-client-provisioner
+          image: registry.k8s.io/sig-storage/nfs-subdir-external-provisioner:v4.0.2
+
+          env:
+            - name: PROVISIONER_NAME
+              value: k8s-sigs.io/nfs-client-provisioner
+
+            - name: NFS_SERVER
+              value: 192.168.0.107
+
+            - name: NFS_PATH
+              value: /data/k8s/dynamic
+
+          volumeMounts:
+            - name: nfs-client-root
+              mountPath: /persistentvolumes
+
+      volumes:
+        - name: nfs-client-root
+          nfs:
+            server: 192.168.0.107
+            path: /data/k8s/dynamic
+            readOnly: false

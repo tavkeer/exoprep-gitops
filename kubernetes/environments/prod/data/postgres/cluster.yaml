@@ -1,0 +1,35 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: exoprep-postgres
+  namespace: exoprep-data
+  labels:
+    app.kubernetes.io/part-of: exoprep
+    environment: production
+
+spec:
+  instances: 2
+
+  storage:
+    storageClass: nfs-client
+    size: 10Gi
+
+  bootstrap:
+    initdb:
+      database: exoprep
+      owner: exoprep
+      secret:
+        name: exoprep-postgres-app
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+  affinity:
+    enablePodAntiAffinity: true
+    topologyKey: kubernetes.io/hostname
+    podAntiAffinityType: required
