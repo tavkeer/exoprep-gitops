@@ -25,7 +25,7 @@ spec:
 
       containers:
         - name: api
-          image: ghcr.io/harudh/exoprep-api:6d3c79a888faf437937fd2a8a23099cafdf38e54
+          image: ghcr.io/harudh/exoprep-api:f800e5863296982940d86978542853b778881f99
           imagePullPolicy: IfNotPresent
 
           ports:
@@ -79,7 +79,7 @@ spec:
               mountPath: /app/uploads
 
         - name: worker
-          image: ghcr.io/harudh/exoprep-worker:6d3c79a888faf437937fd2a8a23099cafdf38e54
+          image: ghcr.io/harudh/exoprep-worker:f800e5863296982940d86978542853b778881f99
           imagePullPolicy: IfNotPresent
 
           envFrom:
