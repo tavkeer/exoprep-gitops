@@ -25,6 +25,9 @@ grafana:
       cpu: 500m
       memory: 512Mi
 
+  initChownData:
+    enabled: false
+
 prometheus:
   enabled: true
 
